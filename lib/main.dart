@@ -26,7 +26,10 @@ class TodoListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text('Top画面'),
+        child: Text(
+          '金銭管理アプリ',
+          style: TextStyle(fontSize: 70),
+        ),
       ),
       floatingActionButton: ElevatedButton(
           onPressed: () {
