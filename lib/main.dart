@@ -1,79 +1,85 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  // 最初に表示するWidget
-  runApp(MyApp());
+  runApp(MoneyManagerApp());
 }
 
-class MyApp extends StatelessWidget {
+class MoneyManagerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // アプリ名
-      title: 'My Todo App',
+      title: 'Money Manager',
       theme: ThemeData(
-        // テーマカラー
         primarySwatch: Colors.blue,
       ),
-      // リスト一覧画面を表示
-      home: TodoListPage(),
+      routes: {
+        '/': (context) => TopPage(),
+        '/moneyManager': (context) => HomePage(),
+      },
+      initialRoute: '/',
     );
   }
 }
 
-class TodoListPage extends StatelessWidget {
+class TopPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Top Page'),
+      ),
       body: Center(
-        child: Text(
-          '金銭管理アプリ',
-          style: TextStyle(fontSize: 70),
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/moneyManager');
+          },
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+            textStyle: TextStyle(fontSize: 24.0),
+            primary: Colors.red,
+          ),
+          child: Text('Open Money Manager'),
         ),
       ),
-      floatingActionButton: ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) {
-                return TodoAddPage();
-              }),
-            );
-          },
-          child: Text("スタート"),
-          style: TextButton.styleFrom(
-            textStyle: const TextStyle(fontSize: 30),
-            foregroundColor: Colors.white, // foreground
-            fixedSize: Size(220, 80),
-            alignment: Alignment.topCenter,
-          )),
-
-      /*floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) {
-              return TodoAddPage();
-            }),
-          );
-        },
-        child: Icon(Icons.add),
-      ),*/
     );
   }
 }
 
-// リスト追加画面用Widget
-class TodoAddPage extends StatelessWidget {
+class HomePage extends StatelessWidget {
+  TextEditingController amountController = TextEditingController();
+
+  void saveAmount(BuildContext context) {
+    String amount = amountController.text;
+    // ここに金額の保存ロジックを追加する
+
+    // 保存が完了したら、テキストフィールドをクリアする
+    amountController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: TextButton(
-          // ボタンをクリックした時の処理
-          onPressed: () {
-            // "pop"で前の画面に戻る
-            Navigator.of(context).pop();
-          },
-          child: Text('Top画面に戻る'),
+      appBar: AppBar(
+        title: Text('Money Manager'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: '金額を入力してください',
+              ),
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () => saveAmount(context),
+              child: Text('保存'),
+            ),
+          ],
         ),
       ),
     );
