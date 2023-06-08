@@ -15,7 +15,7 @@ class MoneyManagerApp extends StatelessWidget {
       routes: {
         '/': (context) => TopPage(),
         '/moneyManager': (context) => HomePage(),
-        '/history': (context) => HistoryPage(),
+        '/history': (context) => HistoryPage(history: []),
       },
       initialRoute: '/',
     );
@@ -71,13 +71,13 @@ class _HomePageState extends State<HomePage> {
   void saveAmount(BuildContext context) {
     String amount = amountController.text;
     // ここに金額の保存ロジックを追加する
-
+    history.add(amount);
     // 保存が完了したら、テキストフィールドをクリアする
     amountController.clear();
 
-    setState(() {
-      history.add(amount);
-    });
+    // setState(() {
+    //   history.add(amount);
+    // });
   }
 
   @override
@@ -100,7 +100,15 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: () => saveAmount(context),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        HistoryPage(history: history), // 入力履歴リストを渡す
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
                 textStyle: TextStyle(fontSize: 35.0),
@@ -128,11 +136,15 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HistoryPage extends StatelessWidget {
+  final List<String> history;
+
+  HistoryPage({required this.history});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('入力履歴ページ'),
+        title: Text('金額履歴ページ'),
       ),
       body: Center(
         child: ElevatedButton(
