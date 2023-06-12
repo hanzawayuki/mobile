@@ -36,7 +36,7 @@ class TopPage extends StatelessWidget {
             Text(
               '金銭管理アプリ',
               style: TextStyle(
-                fontSize: 75.0,
+                fontSize: 50.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -70,15 +70,19 @@ class _HomePageState extends State<HomePage> {
 
   void saveAmount(BuildContext context) {
     String amount = amountController.text;
-    // ここに金額の保存ロジックを追加する
+    // ここに金額の保存ロジック
     history.add(amount);
-    // 保存が完了したら、テキストフィールドをクリアする
+
     amountController.clear();
 
-    // setState(() {
-    //   history.add(amount);
-    // });
-  }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HistoryPage(history: history),
+          settings: RouteSettings(arguments: amount),
+        ),
+      );
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -101,13 +105,7 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        HistoryPage(history: history), // 入力履歴リストを渡す
-                  ),
-                );
+                saveAmount(context);
               },
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
@@ -142,18 +140,24 @@ class HistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String? amount =
+    ModalRoute.of(context)?.settings.arguments as String?;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('金額履歴ページ'),
       ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: Text('戻る'),
-        ),
+      body: Column(
+        children: [
+          Text('保尊された金額: $amount'),
+      ElevatedButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: Text('戻る'),
       ),
+      ],
+    ),
     );
   }
 }
