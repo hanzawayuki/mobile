@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mobile/models/history.dart';
 
-void main() {
-  runApp(MoneyManagerApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(HistoryAdapter());
+  runApp(
+    MaterialApp(home: MoneyManagerApp()),
+  );
 }
 
 class MoneyManagerApp extends StatelessWidget {
@@ -75,14 +84,14 @@ class _HomePageState extends State<HomePage> {
 
     amountController.clear();
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HistoryPage(history: history),
-          settings: RouteSettings(arguments: amount),
-        ),
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HistoryPage(history: history),
+        settings: RouteSettings(arguments: amount),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +150,7 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String? amount =
-    ModalRoute.of(context)?.settings.arguments as String?;
+        ModalRoute.of(context)?.settings.arguments as String?;
 
     return Scaffold(
       appBar: AppBar(
@@ -150,14 +159,14 @@ class HistoryPage extends StatelessWidget {
       body: Column(
         children: [
           Text('保尊された金額: $amount'),
-      ElevatedButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        child: Text('戻る'),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('戻る'),
+          ),
+        ],
       ),
-      ],
-    ),
     );
   }
 }
