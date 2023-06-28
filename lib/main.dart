@@ -24,7 +24,7 @@ class MoneyManagerApp extends StatelessWidget {
       routes: {
         '/': (context) => TopPage(),
         '/moneyManager': (context) => HomePage(),
-        '/history': (context) => HistoryPage(history: []),
+        '/history': (context) => HistoryPage(history: History(amount: '')),
       },
       initialRoute: '/',
     );
@@ -77,20 +77,35 @@ class _HomePageState extends State<HomePage> {
   TextEditingController amountController = TextEditingController();
   List<String> history = [];
 
-  void saveAmount(BuildContext context) {
+  void saveAmount(BuildContext context) async {
     String amount = amountController.text;
-    // ここに金額の保存ロジック
-    history.add(amount);
 
     amountController.clear();
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HistoryPage(history: history),
-        settings: RouteSettings(arguments: amount),
-      ),
+    final box = await Hive.openBox<History>('history');
+
+    // History オブジェクトを作成し、データを設定します
+    final history = History(amount: amount);
+
+    // データを Hive ボックスに保存します
+    box.add(history);
+
+    final route = MaterialPageRoute(
+      builder: (context) => HistoryPage(history: history),
+      settings: RouteSettings(arguments: amount),
     );
+
+    await Future.delayed(Duration.zero); // ミリ秒単位で非同期のギャップを作成します
+
+    await Navigator.push(context, route);
+
+    //   await Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => HistoryPage(history: history),
+    //       settings: RouteSettings(arguments: amount),
+    //     ),
+    //   );
   }
 
   @override
@@ -143,14 +158,22 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HistoryPage extends StatelessWidget {
-  final List<String> history;
+  final History? history;
 
-  HistoryPage({required this.history});
+  HistoryPage({this.history});
+
+  void deleteHistory(int index) {
+    final box = Hive.box<History>('history');
+    box.deleteAt(index);
+  }
 
   @override
   Widget build(BuildContext context) {
     final String? amount =
         ModalRoute.of(context)?.settings.arguments as String?;
+
+    // History オブジェクトをリストに変換する
+    final List<String> historyList = [history?.amount ?? '']; // 適宜変更する必要があります
 
     return Scaffold(
       appBar: AppBar(
@@ -158,7 +181,7 @@ class HistoryPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Text('保尊された金額: $amount'),
+          Text('保持された金額: ${history?.amount ?? ''}'),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
@@ -169,4 +192,10 @@ class HistoryPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class History {
+  late String amount; // 金額を保持するプロパティ
+
+  History({required this.amount}); // コンストラクタで金額を受け取って初期化
 }
