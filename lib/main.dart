@@ -24,7 +24,7 @@ class MoneyManagerApp extends StatelessWidget {
       routes: {
         '/': (context) => TopPage(),
         '/moneyManager': (context) => HomePage(),
-        '/history': (context) => HistoryPage(history: History(amount: '')),
+        '/history': (context) => HistoryPage(history: History()),
       },
       initialRoute: '/',
     );
@@ -84,10 +84,10 @@ class _HomePageState extends State<HomePage> {
 
     final box = await Hive.openBox<History>('history');
 
-    // History オブジェクトを作成し、データを設定します
-    final history = History(amount: amount);
+    // History オブジェクトを作成し、データを設定
+    final history = History()..amount = amount.isNotEmpty ? amount : '';
 
-    // データを Hive ボックスに保存します
+    // データを Hive ボックスに保存
     box.add(history);
 
     final route = MaterialPageRoute(
@@ -157,31 +157,65 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HistoryPage extends StatelessWidget {
+class HistoryPage extends StatefulWidget {
   final History? history;
 
   HistoryPage({this.history});
 
+  @override
+  _HistoryPageState createState() => _HistoryPageState();
+}
+
+class _HistoryPageState extends State<HistoryPage> {
+  List<String> historyList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadHistoryList();
+  }
+
+  void loadHistoryList() async {
+    var box = await Hive.openBox<History>('history');
+    setState(() {
+      historyList = box.values.map((e) => e.amount ?? '').toList();
+    });
+  }
+
   void deleteHistory(int index) {
     final box = Hive.box<History>('history');
     box.deleteAt(index);
+    setState(() {
+      historyList.removeAt(index);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final String? amount =
-        ModalRoute.of(context)?.settings.arguments as String?;
-
-    // History オブジェクトをリストに変換する
-    final List<String> historyList = [history?.amount ?? '']; // 適宜変更する必要があります
-
     return Scaffold(
       appBar: AppBar(
         title: Text('金額履歴ページ'),
       ),
       body: Column(
         children: [
-          Text('保持された金額: ${history?.amount ?? ''}'),
+          Text('保持された金額: ${widget.history?.amount ?? ''}'),
+          Expanded(
+            child: ListView.builder(
+              itemCount: historyList.length,
+              itemBuilder: (context, index) {
+                final historyAmount = historyList[index];
+                return ListTile(
+                  title: Text(historyAmount),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      deleteHistory(index);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
@@ -192,10 +226,4 @@ class HistoryPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class History {
-  late String amount; // 金額を保持するプロパティ
-
-  History({required this.amount}); // コンストラクタで金額を受け取って初期化
 }
