@@ -24,7 +24,7 @@ class MoneyManagerApp extends StatelessWidget {
       routes: {
         '/': (context) => TopPage(),
         '/moneyManager': (context) => HomePage(),
-        '/history': (context) => HistoryPage(history: History()),
+        '/history': (context) => HistoryPage(history: History(amount: '')),
       },
       initialRoute: '/',
     );
@@ -36,7 +36,7 @@ class TopPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Top Page'),
+        title: Text('トップページ'),
       ),
       body: Center(
         child: Column(
@@ -84,10 +84,8 @@ class _HomePageState extends State<HomePage> {
 
     final box = await Hive.openBox<History>('history');
 
-    // History オブジェクトを作成し、データを設定
-    final history = History()..amount = amount.isNotEmpty ? amount : '';
+    final history = History(amount: amount.isNotEmpty ? amount : '');
 
-    // データを Hive ボックスに保存
     box.add(history);
 
     final route = MaterialPageRoute(
@@ -95,24 +93,17 @@ class _HomePageState extends State<HomePage> {
       settings: RouteSettings(arguments: amount),
     );
 
-    await Future.delayed(Duration.zero); // ミリ秒単位で非同期のギャップを作成します
-
+    await Future.delayed(Duration.zero);
+    print('Before navigating to history page');
     await Navigator.push(context, route);
-
-    //   await Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder: (context) => HistoryPage(history: history),
-    //       settings: RouteSettings(arguments: amount),
-    //     ),
-    //   );
+    print('After navigating to history page');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Money Manager'),
+        title: Text('金額保存画面'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -226,4 +217,10 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
     );
   }
+}
+
+class History {
+  final String amount;
+
+  History({required this.amount});
 }
