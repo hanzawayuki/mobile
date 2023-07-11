@@ -8,6 +8,9 @@ void main() async {
   await Hive.initFlutter();
 
   Hive.registerAdapter(HistoryAdapter());
+
+  await Hive.openBox<History>('history');
+
   runApp(
     MaterialApp(home: MoneyManagerApp()),
   );
@@ -77,26 +80,32 @@ class _HomePageState extends State<HomePage> {
   TextEditingController amountController = TextEditingController();
   List<String> history = [];
 
-  void saveAmount(BuildContext context) async {
+  String? amount;
+
+  Future<void> saveAmount(BuildContext context) async {
     String amount = amountController.text;
 
     amountController.clear();
 
     final box = await Hive.openBox<History>('history');
 
-    final history = History(amount: amount.isNotEmpty ? amount : '');
+    final history =
+        History(amount: amount != null && amount.isNotEmpty ? amount! : '');
 
     box.add(history);
 
-    final route = MaterialPageRoute(
-      builder: (context) => HistoryPage(history: history),
-      settings: RouteSettings(arguments: amount),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HistoryPage(history: history),
+        settings: RouteSettings(arguments: amount),
+      ),
     );
 
-    await Future.delayed(Duration.zero);
-    print('Before navigating to history page');
-    await Navigator.push(context, route);
-    print('After navigating to history page');
+    // await Future.delayed(Duration.zero);
+    // print('Before navigating to history page');
+    // await Navigator.push(context, route);
+    // print('After navigating to history page');
   }
 
   @override
@@ -119,8 +128,8 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: () {
-                saveAmount(context);
+              onPressed: () async {
+                await saveAmount(context);
               },
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
